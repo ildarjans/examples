@@ -109,7 +109,7 @@ newSpanforVariable.setAttribute('class', 'days');
 getTimeNumbers.insertBefore(newSpanforString, getTimeNumbers.firstChild);
 getTimeNumbers.insertBefore(newSpanforVariable, getTimeNumbers.firstChild);
 
-const deadline = new Date("2019/06/27");
+const deadline = new Date("2019/07/27");
 
 setClock('timer', deadline);
 
@@ -131,3 +131,41 @@ popupBtn.addEventListener('click', function() {
     moreBtn.classList.remove('more-splash');
     document.body.style.overflow = 'visible';
 });
+
+
+//send form
+
+let message = {
+    loading: 'loading',
+    success: 'success',
+    fail: 'failed'
+}
+
+let form = document.querySelector('.main-form'),
+    inputForm = form.getElementsByTagName('input'),
+    messageStatus = document.createElement('div');
+
+messageStatus.classList.add('status');
+
+form.addEventListener('submit', function(event) {
+    event.preventDefault();
+    form.appendChild(messageStatus);
+
+    let request = new XMLHttpRequest();
+    request.open('POST', 'server.php');
+    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    let formData = new FormData(form);
+    request.send(formData);
+    
+    request.addEventListener('readystatechange', () => {
+        if (request.readyState < 4){
+            messageStatus.innerHTML = message.loading;
+        }
+        else if (request.readyState === 4 && request.status == 200) {
+            messageStatus.innerHTML = message.success;            
+        }
+        else {messageStatus.innerHTML = message.fail}
+    })
+
+})
