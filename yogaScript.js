@@ -149,35 +149,140 @@ window.addEventListener('DOMContentLoaded', function() {
         event.preventDefault();
         form.appendChild(messageStatus);
 
-        let request = new XMLHttpRequest();
-        request.open('POST', 'server.php');
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
         let formData = new FormData(form);
-        request.send(formData);
-        
-        request.addEventListener('readystatechange', () => {
-            if (request.readyState < 4){
-                messageStatus.innerHTML = message.loading;
-            }
-            else if (request.readyState === 4 && request.status == 200) {
-                messageStatus.innerHTML = message.success;            
-            }
-            else {messageStatus.innerHTML = message.fail}
+
+        // Make JSON object
+        let obj = {};
+
+        formData.forEach(function(value,key) {
+            obj[key] = value;
         });
 
-        for (let i = 0; i < inputForm.length; i++) {
-            inputForm[i].value = '';
-        }
-    });
-    
-    moreBtn.addEventListener('click', function() {
-        overlay.style.display = 'block';
-        this.classList.add('more-splash');
-        document.body.style.overflow = 'hidden';
-        messageStatus.innerHTML = ''
-    });
+        let objJSON = JSON.stringify(obj);
 
+        function postDataForm(data) {
+            return new Promise(function(resolve, reject) {
+
+            let request = new XMLHttpRequest();
+            //json explanation
+            request.open('POST', 'server.php');
+            request.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
+
+            // request.open('POST', 'server.php');
+            // request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');           
+
+            request.onreadystatechange = function() {
+                if (request.readyState < 4){
+                    resolve();
+                }
+                else if (request.readyState === 4 && request.status == 200) {
+                    resolve();            
+                }
+                else { 
+                    reject()
+                }
+            }; // onreadystatechange  
+
+            // request.send(data)
+
+            //Json
+            request.send(objJSON)
+
+            }); //end promise
+        }; //end postDataForm
+
+        function closeModalWindow() {
+            popupBtn.addEventListener('click', function() {            
+                overlay.style.display = '';
+                moreBtn.classList.remove('more-splash');
+                document.body.style.overflow = 'visible';  
+                messageStatus.innerHTML = '';
+                clearInput();
+            })
+        };// end closeModalWindow
+        
+        function clearInput() {
+            for (let i = 0; i < inputForm.length; i++) {
+            inputForm[i].value = '';
+            }
+        } //end ClearInput
+        
+        postDataForm(formData)
+        .then(()=> messageStatus.innerHTML = message.loading)
+        .then(()=> messageStatus.innerHTML = message.success)
+        .catch(()=> messageStatus.innerHTML = message.success)
+        .then(()=> closeModalWindow())
+
+
+    }); //addEventListener
+
+}) // end DOMContentLoaded
+
+
+// Slider
+
+let sliderIndex = 1,
+    slides = document.querySelectorAll('.slider-item'),
+    prev = document.querySelector('.prev'),
+    next = document.querySelector('.next'),
+    dotsWrap = document.querySelector('.slider-dots'),
+    dots = document.querySelectorAll('.dot');
+
+
+showSlides(sliderIndex);
+
+function showSlides(n) {
+    if (n > slides.length) {
+        sliderIndex = 1
+    }
+    if (n < 1) {
+        sliderIndex = slides.length;
+    }
+
+    slides.forEach((item) => item.style.display = 'none');
+    // for (let i = 1; i < slides.length; i++) {
+    //     slides[i].item.style.display = 'none'
+    // }
+
+    dots.forEach((item) => item.classList.remove('dot-active'));
+    slides[sliderIndex - 1].style.display = 'block';
+    dots[sliderIndex - 1].classList.add('dot-active');
+
+}; //end show slides
+
+
+let intSwichOn = false;
+let repeatSlides;
+
+function plusSlider(n) {
+    showSlides(sliderIndex += n);
+};
+function currentSlide(n) {
+    showSlides(sliderIndex = n)
+};
+ 
+prev.addEventListener('click', function() {
+    plusSlider(-1);
+    if (intSwichOn == true) {clearInterval(repeatSlides)};
+    repeatSlides = setInterval(() => {plusSlider(-1)}, 2000);
+    intSwichOn = true;
+});
+next.addEventListener('click', function() {
+    plusSlider(1);
+    if (intSwichOn == true) {clearInterval(repeatSlides)};
+    repeatSlides = setInterval(() => {plusSlider(1)}, 2000);
+    intSwichOn = true;
+});
+
+
+
+dotsWrap.addEventListener('click', function(e) {
+    for (let i = 0; i < dots.length; i++) {
+        if (e.target.classList.contains('dot') && e.target == dots[i]) {
+           currentSlide(i + 1) 
+        }
+    }
 })
+
 
 
