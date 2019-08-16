@@ -1,2 +1,1 @@
-Here i adding scripts used in project 2.
-1. AddEventListener. Show/hide TABS.
+In branch "project2" added js scripts used in Ivan Petrichenko JS course
